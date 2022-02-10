@@ -5,6 +5,7 @@ import re
 import os
 import pickle
 import pkg_resources
+import sys
 
 
 class TaxFinder():
@@ -19,19 +20,19 @@ class TaxFinder():
 
 		try:
 			# test if the pickled file is newer
-			if os.path.getmtime(self.taxinfo_pickle) > os.path.getmtime(self.taxinfo_file):
-				self.taxdb = pickle.load(open(self._getFN(self.taxinfo_pickle), 'rb'))
+			if os.path.getmtime(ti_pickle) > os.path.getmtime(ti_file):
+				self.taxdb = pickle.load(open(ti_pickle, 'rb'))
 			else:
 				raise IOError
 		except IOError:
 			self.taxdb = {}
-			with open(self._getFN(self.taxinfo_file)) as namefile:
+			with open(ti_file) as namefile:
 				for line in namefile:
 					# TaxID, Level, Parent, Rank, Name
 					l = line.split('\t')
 					self.taxdb[int(l[0])] = {'level': int(l[1]), 'parent': int(l[2]), 'rank': l[3], 'name': l[4].rstrip()}
 
-			pickle.dump(self.taxdb, open(self._getFN(self.taxinfo_pickle), 'wb'))
+			pickle.dump(self.taxdb, open(ti_pickle, 'wb'))
 
 		self.lineageCache = {}
 		self.fastLineageCache = {}
@@ -46,10 +47,10 @@ class TaxFinder():
 		self.acc2taxid.close()
 
 
-	def _getFN(self, fn):
-		''' Gets absolute path for a given file that is in the same directory as this script '''
-
-		return os.path.join(self.path, fn)
+#	def _getFN(self, fn):
+#		''' Gets absolute path for a given file that is in the same directory as this script '''
+#
+#		return os.path.join(self.path, fn)
 
 
 	def discover_databases(self):
@@ -60,7 +61,7 @@ class TaxFinder():
 		try:
 			path = os.environ["TFPATH"]
 		except KeyError:
-			path = os.path.dirname(pkg_resources.get_resource_filename('taxfinder', 'db/taxinfo'))
+			path = os.path.dirname(pkg_resources.resource_filename('taxfinder', 'db/taxinfo'))
 
 		ti_file = os.path.join(path, 'taxinfo')
 		ti_pickle = os.path.join(path, 'taxinfo.p')

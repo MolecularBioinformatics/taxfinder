@@ -17,8 +17,8 @@ setuptools.setup(
     long_description=long_description,
     long_description_content_type='text/markdown',
     url='https://github.com/MolecularBioinformatics/taxfinder',
-    packages=setuptools.find_packages(),,
-	package_data = {'taxfinder': ['db/*']}
+    packages=setuptools.find_packages(),
+	package_data={'taxfinder': ['db/*']},
     entry_points={'console_scripts': [
                                     'taxfinder_update = taxfinder.update:main'
                                     ]},

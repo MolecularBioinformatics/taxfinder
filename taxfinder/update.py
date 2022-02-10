@@ -5,6 +5,7 @@ import io
 import logging
 import os
 import pkg_resources
+import sys
 import tarfile
 import urllib.request
 
@@ -21,11 +22,12 @@ def main():
 
 	ti_file = discover_database()
 
-	print('Download the taxonomy dump from NCBI')
+	print('Download the taxonomy dump')
 	print(url)
 	response = urllib.request.urlopen(url)
 	compressed = io.BytesIO(response.read())
 
+	print('Decompress download')
 	# Open as tar object (with gz compression)
 	tar = tarfile.open(fileobj=compressed, mode='r:gz')
 
@@ -52,18 +54,20 @@ def main():
 	print('Writing taxinfo')
 
 	with open(ti_file, 'w') as out:
-		for taxid in sorted(data.keys()):
+		for taxid in sorted(lineage_info.keys()):
 			# TaxID, Level, Parent, Rank, Name
 			level = 0
 			tid = taxid
 			while tid != '1':
-				tid = data[tid][1]
+				tid = lineage_info[tid][1]
 				level += 1
-			data[taxid][0] = str(level)
-			out.write('{}\t{}\n'.format(taxid, '\t'.join(data[taxid])))
+			lineage_info[taxid][0] = str(level)
+			out.write('{}\t{}\n'.format(taxid, '\t'.join(lineage_info[taxid])))
+
+	print('Done')
 
 
-def discover_database(self):
+def discover_database():
 	'''
 	Test if the path to the database is known and if the database exists and is writable.
 	'''
@@ -71,7 +75,7 @@ def discover_database(self):
 	try:
 		path = os.environ["TFPATH"]
 	except KeyError:
-		path = os.path.dirname(pkg_resources.get_resource_filename('taxfinder', 'db/taxinfo'))
+		path = os.path.dirname(pkg_resources.resource_filename('taxfinder', 'db/taxinfo'))
 
 	ti_file = os.path.join(path, 'taxinfo')
 
