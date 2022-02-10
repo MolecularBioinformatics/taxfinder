@@ -4,17 +4,23 @@ import argparse
 import io
 import logging
 import os
-import pkg_resources
 import sys
 import tarfile
 import urllib.request
 
+import pkg_resources
+
 
 def main():
+	'''
+	Entry point for the `taxfinder_update` command line tool.
+	'''
 
 	parser = argparse.ArgumentParser(description='Update the taxonomy lineage database.')
 
-	parser.add_argument('--url', default='https://ftp.ncbi.nih.gov/pub/taxonomy/taxdump.tar.gz', help='The URL to load the taxonomy lineage database from. Default is %(default)s')
+	parser.add_argument(
+		'--url', default='https://ftp.ncbi.nih.gov/pub/taxonomy/taxdump.tar.gz',
+		help='The URL to load the taxonomy lineage database from. Default is %(default)s')
 
 	args = parser.parse_args()
 
@@ -82,7 +88,9 @@ def discover_database():
 	try:
 		open(ti_file, 'a')
 	except IOError:
-		logging.critical(f'The taxonomy database {ti_file} is not readable/writable. You can define your own path by setting the environment variable `TFPATH` to the path you want.')
+		logging.critical(f'The taxonomy database {ti_file} is not readable/writable.'
+		'You can define your own path by setting the environment variable'
+		'`TFPATH` to the path you want.')
 		sys.exit(1)
 
 	return ti_file

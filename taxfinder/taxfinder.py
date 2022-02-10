@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
 
 import logging
-import re
 import os
 import pickle
-import pkg_resources
 import sys
+
+import pkg_resources
 
 
 class TaxFinder():
 
 	def __init__(self):
 
-		ti_file, ti_pickle = self.discover_databases()
+		ti_file, ti_pickle = self._discover_databases()
 
 		#LEG self.acc2taxid = open(self._getFN('acc2taxid'), 'rb')
 		#LEG with open(self._getFN('numLines')) as f:
@@ -29,22 +29,19 @@ class TaxFinder():
 			with open(ti_file) as namefile:
 				for line in namefile:
 					# TaxID, Level, Parent, Rank, Name
-					l = line.split('\t')
-					self.taxdb[int(l[0])] = {'level': int(l[1]), 'parent': int(l[2]), 'rank': l[3], 'name': l[4].rstrip()}
+					lline = line.split('\t')
+					self.taxdb[int(lline[0])] = {
+						'level': int(lline[1]),
+						'parent': int(lline[2]),
+						'rank': lline[3],
+						'name': lline[4].rstrip(),
+					}
 
 			pickle.dump(self.taxdb, open(ti_pickle, 'wb'))
 
-		self.lineageCache = {}
-		self.fastLineageCache = {}
-		self.taxidCache = {}
-
-
-	def __enter__(self):
-		return self
-
-
-	def __exit__(self, exc_type, exc_value, traceback):
-		self.acc2taxid.close()
+		self.lineage_cache = {}
+		self.fast_lineage_cache = {}
+		self.taxid_cache = {}
 
 
 #	def _getFN(self, fn):
@@ -53,9 +50,10 @@ class TaxFinder():
 #		return os.path.join(self.path, fn)
 
 
-	def discover_databases(self):
+	def _discover_databases(self):
 		'''
-		Test if the path to the database is known and if the database exists and is readable/writable.
+		Test if the path to the database is known and if the database
+		exists and is readable/writable.
 		'''
 
 		try:
@@ -69,31 +67,37 @@ class TaxFinder():
 		try:
 			open(ti_pickle, 'ab')
 		except IOError:
-			logging.critical(f'The taxonomy database {ti_pickle} is not readable/writable. You can define your own path by setting the environment variable `TFPATH` to the path you want.')
+			logging.critical(f'The taxonomy database {ti_pickle} is not'
+			'readable/writable. You can define your own path by setting'
+			'the environment variable `TFPATH` to the path you want.')
 			sys.exit(1)
 
 		try:
 			open(ti_file)
 		except IOError:
-			logging.critical(f'The taxonomy database {ti_file} is not readable. You can define your own path by setting the environment variable `TFPATH` to the path you want. You then have to run `taxfinder_update` from your command line.')
+			logging.critical(f'The taxonomy database {ti_file} is not'
+			'readable. You can define your own path by setting the'
+			'environment variable `TFPATH` to the path you want. You then'
+			'have to run `taxfinder_update` from your command line.')
 			sys.exit(1)
 
 		if os.path.getsize(ti_file) == 0:
-			logging.critical(f'Please run `taxfinder_update` from your command line to download and initialize the taxonomy database.')
+			logging.critical('Please run `taxfinder_update` from your'
+			'command line to download and initialize the taxonomy database.')
 			sys.exit(1)
 
 		return ti_file, ti_pickle
 
 
-#	def getTaxID(self, acc):
+#	def get_taxid(self, acc):
 #		''' Finds the NCBI taxonomy id given an accession id '''
 #
 #		# Accessions are always uppercase and we only consider the accession without the version part
 #		acc = acc.split('.')[0].upper()
 #
 #		# If we already looked for the accesion, get it from the cache
-#		if acc in self.taxidCache:
-#			return self.taxidCache[acc]
+#		if acc in self.taxid_cache:
+#			return self.taxid_cache[acc]
 #
 #		lo = 0
 #		hi = self.numLines
@@ -118,17 +122,17 @@ class TaxFinder():
 #		else:
 #			taxid = int(rawread[12:].rstrip())
 #
-#		self.taxidCache[acc] = taxid
+#		self.taxid_cache[acc] = taxid
 #
 #		return taxid
 
-	def getNameFromID(self, taxid):
+	def get_name_from_id(self, taxid):
 		''' Returns the taxonomic name of the given taxid '''
 
 		return self.taxdb[int(taxid)]['name']
 
 
-	def getTaxInfo(self, taxid):
+	def get_tax_info(self, taxid):
 		'''
 		Get taxonomic information for the given taxid.
 		:returns: {'taxid': int, 'level': int, 'parent': int, 'rank': str, 'name': str}
@@ -148,8 +152,10 @@ class TaxFinder():
 
 #	def getInfoFromHitDef(self, hitid, hitdef):
 #		'''
-#		Get all taxonomy information from a hit id and hit definition (may include several species)
-#		:returns: [{'taxid': int, 'level': int, 'parent': int, 'rank': str, 'name': str, 'acc': str, 'protname': str}, ...]
+#		Get all taxonomy information from a hit id and hit definition
+#		(may include several species)
+#		:returns: [{'taxid': int, 'level': int, 'parent': int, 'rank': str,
+#			'name': str, 'acc': str, 'protname': str}, ...]
 #		'''
 #
 #		hit = hitid + hitdef
@@ -167,7 +173,7 @@ class TaxFinder():
 #			if '[' in protname:
 #				protname = protname.split('[')[0].rstrip()
 #
-#			res = self.getTaxInfo(self.getTaxID(acc))
+#			res = self.get_tax_info(self.get_taxid(acc))
 #			res['acc'] = acc
 #			res['protname'] = protname
 #
@@ -176,28 +182,31 @@ class TaxFinder():
 #		return results
 
 
-	def getSpeciesFromSubspecies(self, taxid):
+	def get_species_from_subspecies(self, taxid):
 		'''
-		Given the taxid of a subspecies, returns the species or raises a ValueError if no species could be found.
+		Given the taxid of a subspecies, returns the species or raises a
+		ValueError if no species could be found.
 		'''
 
-		lineage = self.getLineageFast(int(taxid))
+		lineage = self.get_lineage_fast(int(taxid))
 		for tid in lineage[::-1]:
-			if self.getTaxInfo(tid)['rank'] == 'species':
+			if self.get_tax_info(tid)['rank'] == 'species':
 				return tid
 
 		raise ValueError('No species found for {}'.format(taxid))
 
 
-	def getLowestReasonableTaxon(self, taxid):
+	def get_lowest_reasonable_taxon(self, taxid):
 		'''
-		Given a taxid, returns the taxid the closest species or higher level (that is not `no rank`) that does not contain 'sp.' in its name. Raises a ValueError if no "reasonable taxon" could be found.
+		Given a taxid, returns the taxid the closest species or higher
+		level (that is not `no rank`) that does not contain 'sp.' in its
+		name. Raises a ValueError if no "reasonable taxon" could be found.
 		'''
 
 		notok = {'no rank', 'subspecies', 'forma', 'varietas'}
-		lineage = self.getLineageFast(int(taxid))
+		lineage = self.get_lineage_fast(int(taxid))
 		for tid in lineage[::-1]:
-			info = self.getTaxInfo(tid)
+			info = self.get_tax_info(tid)
 			rank = info['rank']
 			if rank not in notok and 'sp.' not in info['name']:
 				return tid
@@ -205,59 +214,65 @@ class TaxFinder():
 		raise ValueError('No reasonable taxon found for {}'.format(taxid))
 
 
-	def getLineage(self, taxid, display = 'name'):
+	def get_lineage(self, taxid, display = 'name'):
 		'''
-		Given a taxid, returns the lineage up to `root` as tuple. `display` configures how the lineage should be shown. If `display` is 'name', the taxonomic name will be used. If it is 'taxid', the taxid will be used. If it is anything else, name^taxid will be used.
-		This method uses caching. If the lineage for a taxid was already found before, it will return that lineage in the `display` mode used in the first search, ignoring the current `display` value.
+		Given a taxid, returns the lineage up to `root` as tuple. `display`
+		configures how the lineage should be shown. If `display` is 'name',
+		the taxonomic name will be used. If it is 'taxid', the taxid will
+		be used. If it is anything else, name^taxid will be used.
+
+		This method uses caching. If the lineage for a taxid was already
+		found before, it will return that lineage in the `display` mode
+		used in the first search, ignoring the current `display` value.
+
 		If the taxid could not be found, an empty tuple will be returned.
 		'''
 
 		def reformat(lineage, display):
 			if display == 'taxid':
 				return tuple(int(l[0]) for l in lineage)
-			elif display == 'name':
+			if display == 'name':
 				return tuple(l[1] for l in lineage)
-			else:
-				return tuple(l[1]+'^'+l[0] for l in lineage)
+			return tuple(l[1]+'^'+l[0] for l in lineage)
 
 
 		taxid = int(taxid)
 
-		if taxid in self.lineageCache:
-			return reformat(self.lineageCache[taxid], display)
+		if taxid in self.lineage_cache:
+			return reformat(self.lineage_cache[taxid], display)
 
 		orig_taxid = taxid
 		lineage = []
 
 		while taxid != 1:
 			try:
-				t = self.taxdb[taxid]
+				current = self.taxdb[taxid]
 			except KeyError:
-				self.lineageCache[orig_taxid] = tuple()
+				self.lineage_cache[orig_taxid] = tuple()
 				return tuple()
-			lineage.append((str(taxid), t['name']))
-			taxid = t['parent']
+			lineage.append((str(taxid), current['name']))
+			taxid = current['parent']
 
 		lineage.append(('1', 'root'))
 
 		lin = tuple(lineage[::-1])
 
-		self.lineageCache[orig_taxid] = lin
+		self.lineage_cache[orig_taxid] = lin
 
 		return reformat(lin, display)
 
 
-	def getLineageFast(self, taxid):
+	def get_lineage_fast(self, taxid):
 		'''
 		Given a taxid, returns the lineage up to `root` as list. All elements will be taxids.
-		This method is faster than `getLineage`, so use this when you need many lineages.
+		This method is faster than `get_lineage`, so use this when you need many lineages.
 		If the taxid could not be found, an empty tuple will be returned.
 		'''
 
 		orig_taxid = taxid
 
-		if taxid in self.fastLineageCache:
-			return self.fastLineageCache[taxid]
+		if taxid in self.fast_lineage_cache:
+			return self.fast_lineage_cache[taxid]
 
 		lineage = []
 
@@ -265,7 +280,7 @@ class TaxFinder():
 			try:
 				t = self.taxdb[taxid]
 			except KeyError:
-				self.fastLineageCache[orig_taxid] = tuple()
+				self.fast_lineage_cache[orig_taxid] = tuple()
 				return tuple()
 			lineage.append(taxid)
 			taxid = t['parent']
@@ -274,6 +289,6 @@ class TaxFinder():
 
 		lin = tuple(lineage[::-1])
 
-		self.fastLineageCache[orig_taxid] = lin
+		self.fast_lineage_cache[orig_taxid] = lin
 
 		return lin
