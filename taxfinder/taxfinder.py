@@ -214,7 +214,7 @@ class TaxFinder():
 
 		def reformat(lineage, display):
 			if display == 'taxid':
-				return tuple(l[0] for l in lineage)
+				return tuple(int(l[0]) for l in lineage)
 			elif display == 'name':
 				return tuple(l[1] for l in lineage)
 			else:
