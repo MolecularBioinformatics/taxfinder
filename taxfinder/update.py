@@ -88,8 +88,8 @@ def discover_database():
 	try:
 		open(ti_file, 'a')
 	except IOError:
-		logging.critical(f'The taxonomy database {ti_file} is not readable/writable.'
-		'You can define your own path by setting the environment variable'
+		logging.critical(f'The taxonomy database {ti_file} is not readable/writable. '
+		'You can define your own path by setting the environment variable '
 		'`TFPATH` to the path you want.')
 		sys.exit(1)
 

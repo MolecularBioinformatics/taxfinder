@@ -67,22 +67,22 @@ class TaxFinder():
 		try:
 			open(ti_pickle, 'ab')
 		except IOError:
-			logging.critical(f'The taxonomy database {ti_pickle} is not'
-			'readable/writable. You can define your own path by setting'
+			logging.critical(f'The taxonomy database {ti_pickle} is not '
+			'readable/writable. You can define your own path by setting '
 			'the environment variable `TFPATH` to the path you want.')
 			sys.exit(1)
 
 		try:
 			open(ti_file)
 		except IOError:
-			logging.critical(f'The taxonomy database {ti_file} is not'
-			'readable. You can define your own path by setting the'
-			'environment variable `TFPATH` to the path you want. You then'
+			logging.critical(f'The taxonomy database {ti_file} is not '
+			'readable. You can define your own path by setting the '
+			'environment variable `TFPATH` to the path you want. You then '
 			'have to run `taxfinder_update` from your command line.')
 			sys.exit(1)
 
 		if os.path.getsize(ti_file) == 0:
-			logging.critical('Please run `taxfinder_update` from your'
+			logging.critical('Please run `taxfinder_update` from your '
 			'command line to download and initialize the taxonomy database.')
 			sys.exit(1)
 
