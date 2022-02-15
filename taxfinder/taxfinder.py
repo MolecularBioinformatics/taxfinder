@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
 
+'''
+This is the taxfinder module. Import TaxFinder from this module and
+instanciate it to use its functions (instanciating is necessary for
+caching).
+'''
+
 import logging
 import os
 import pickle
@@ -9,8 +15,14 @@ import pkg_resources
 
 
 class TaxFinder():
+	'''
+	The TaxFinder class.
+	'''
 
 	def __init__(self):
+		'''
+		Initialize the TaxFinder class.
+		'''
 
 		ti_file, ti_pickle = self._discover_databases()
 
@@ -193,7 +205,7 @@ class TaxFinder():
 			if self.get_tax_info(tid)['rank'] == 'species':
 				return tid
 
-		raise ValueError('No species found for {}'.format(taxid))
+		raise ValueError(f'No species found for {taxid}')
 
 
 	def get_lowest_reasonable_taxon(self, taxid):
@@ -211,7 +223,7 @@ class TaxFinder():
 			if rank not in notok and 'sp.' not in info['name']:
 				return tid
 
-		raise ValueError('No reasonable taxon found for {}'.format(taxid))
+		raise ValueError(f'No reasonable taxon found for {taxid}')
 
 
 	def get_lineage(self, taxid, display = 'name'):
@@ -278,12 +290,12 @@ class TaxFinder():
 
 		while taxid != 1:
 			try:
-				t = self.taxdb[taxid]
+				tax = self.taxdb[taxid]
 			except KeyError:
 				self.fast_lineage_cache[orig_taxid] = tuple()
 				return tuple()
 			lineage.append(taxid)
-			taxid = t['parent']
+			taxid = tax['parent']
 
 		lineage.append(1)
 

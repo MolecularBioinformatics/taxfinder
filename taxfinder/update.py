@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
 
+'''
+This is the taxfinder_update command line tool. It is not meant to be
+imported.
+'''
+
 import argparse
 import io
 import logging
