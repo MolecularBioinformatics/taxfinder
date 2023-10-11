@@ -9,7 +9,7 @@ version = re.search(r'__version__\s*=\s*[\'"]([^\'"]*)[\'"]',
                     open('taxfinder/__init__.py').read()).group(1)
 
 setuptools.setup(
-    name='Taxfinder',
+    name='taxfinder',
     version=version,
     author='Mathias Bockwoldt',
     author_email='mathias.bockwoldt@gmail.com',
