@@ -6,13 +6,10 @@ The TaxFinder module is a library to help with NCBI taxonomy ids.
 Install it using `pip`, preferable into a virtual environment:
 
 ```sh
-$ pip install taxfinder ### TODO: This is not working for now!
-### TODO: Use for now:
-$ cd path/to/taxfinder
-$ pip install -e .
+$ pip install taxfinder
 ```
 
-To do this, TaxFinder needs to download and create a databse with taxonomy information. This database needs in the order of 300 MB disc space. To create the database, run
+TaxFinder needs to download and create a databse with taxonomy information. This database needs in the order of 300 MB disc space. To create the database, run
 
 ```sh
 $ taxfinder_update
